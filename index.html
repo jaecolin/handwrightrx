@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>祥峻中醫 - 水煎藥處方生成器 (林佑彥醫師專屬-V2完整版)</title>
+    <title>林佑彥醫師 - 水煎藥處方生成器 (個人專屬版 v4)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -22,8 +22,6 @@
             #print-area { box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
             @page { margin: 0.5cm; size: A4 portrait; }
         }
-        
-        .print-border { border-bottom: 1px solid #e5e7eb; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900">
@@ -34,7 +32,6 @@
 
         // --- 1. 資料與設定 ---
         const CLINIC_INFO = {
-            nameEn: "XIANGJUN TRADITIONAL CHINESE MEDICINE CLINIC",
             nameZh: "祥峻中醫診所",
             address: "台中市西屯區市政北一路1號6樓之1",
             phone: "04-2473-5561",
@@ -51,7 +48,9 @@
         // --- 2. 主程式 ---
         function App() {
             // 預設病歷內容
-            const DEFAULT_TEXT = `醫師：林佑彥  自費  (內)  [       -]
+            const DEFAULT_TEXT = `病名：H04.123 乾眼症
+脈象：弦細
+醫師：林佑彥  自費  (內)  [       -]
 用藥：2 x14/1天2次    
 處方：柴胡(自)(?1.5錢  黃芩(自)(?1.5錢  薑半夏(自) 1.0錢
       山梔子(自) 0.5錢  茵陳蒿(自) 0.5錢  夏枯草(自) 1.0錢
@@ -67,45 +66,49 @@
             const [rawText, setRawText] = useState(DEFAULT_TEXT);
             const [patientName, setPatientName] = useState("");
             const [visitDate, setVisitDate] = useState(new Date().toISOString().split('T')[0]);
+            const [pulse, setPulse] = useState("");
+            const [diagnosis, setDiagnosis] = useState("");
             const [parsedData, setParsedData] = useState({ medicines: [], others: [] });
 
-            // --- 核心邏輯：強效文字解析器 (V2) ---
+            // --- 核心邏輯：強效文字解析器 ---
             const parsePrescription = (text) => {
                 const medicines = [];
                 const others = [];
 
-                // 1. 基本清理
+                // 擷取脈象
+                const pulseMatch = text.match(/脈[象診]?\s*[:：]\s*([^\s\n]+)/);
+                if (pulseMatch) {
+                    setPulse(pulseMatch[1].trim());
+                }
+
+                // 擷取病名 (ICD-10)
+                const dxMatch = text.match(/(?:病名|診斷|ICD(?:-10)?)[^\w\u4e00-\u9fa5]*([^\n]+)/);
+                if (dxMatch) {
+                    setDiagnosis(dxMatch[1].trim());
+                }
+
                 let cleanText = text.replace(/醫師：.*?\n/, '') 
                                     .replace(/用藥：.*?\n/, '') 
                                     .replace(/處方：/, '');    
 
-                // 2. 使用全域 Regex 搜尋 (解決文字沾黏問題)
-                // 邏輯：抓取 [中文藥名] -> 忽略中間的 [符號/自/問號/空白] -> 抓取 [數字] -> 忽略 [單位]
+                // 全域 Regex 搜尋：解決文字沾黏，抓出藥名與劑量
                 const regex = /([\u4e00-\u9fa5]+)(?:[\(\)自\?\[\]\s]*?)(\d+(?:\.\d+)?)(?:[錢天次g克])?/g;
-                
                 const matches = [...cleanText.matchAll(regex)];
 
                 matches.forEach(match => {
                     const name = match[1];
                     const dose = match[2];
                     
-                    // 防呆：如果抓到的「藥名」其實是單位字，則跳過
                     if (["錢", "天", "次", "克", "公克", "日", "帖"].includes(name)) return;
 
-                    // 判斷單位與類別
                     let unit = "錢"; 
                     if (name.includes("代煎") || name.includes("天")) unit = "天";
                     else if (name.includes("寄運") || name.includes("次")) unit = "次";
 
-                    // 分類：藥材 vs 其他項目 (代煎/運費)
                     if (name.includes("代煎") || name.includes("寄運") || name.includes("掛號")) {
                         others.push({ name, dose, unit });
                     } else {
-                        medicines.push({
-                            name_zh: name,
-                            dosage: dose,
-                            unit: "錢"
-                        });
+                        medicines.push({ name_zh: name, dosage: dose, unit: "錢" });
                     }
                 });
 
@@ -122,30 +125,51 @@
                     {/* 左側：輸入區 */}
                     <div className="w-full md:w-1/3 p-6 bg-slate-800 text-white overflow-y-auto h-screen sticky top-0 no-print z-10">
                         <h1 className="text-2xl font-bold mb-6 flex items-center text-teal-400">
-                            <Syringe className="mr-2" /> 處方生成器
-                            <span className="text-xs ml-2 px-2 py-1 bg-teal-900 rounded text-teal-300">V2 強效版</span>
+                            <Syringe className="mr-2" /> 個人處方生成器
                         </h1>
 
                         <div className="space-y-6">
                             <div className="bg-slate-700 p-4 rounded-lg border border-slate-600">
                                 <h2 className="font-bold mb-3 flex items-center text-teal-300"><User className="w-4 h-4 mr-2"/> 1. 患者資訊</h2>
                                 <div className="space-y-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs text-slate-400 mb-1">患者姓名</label>
+                                            <input 
+                                                type="text" 
+                                                value={patientName}
+                                                onChange={(e) => setPatientName(e.target.value)}
+                                                placeholder="請輸入姓名..."
+                                                className="w-full bg-slate-900 border border-slate-500 rounded p-2 text-white focus:border-teal-500 outline-none"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-slate-400 mb-1">開立日期</label>
+                                            <input 
+                                                type="date" 
+                                                value={visitDate}
+                                                onChange={(e) => setVisitDate(e.target.value)}
+                                                className="w-full bg-slate-900 border border-slate-500 rounded p-2 text-white focus:border-teal-500 outline-none"
+                                            />
+                                        </div>
+                                    </div>
                                     <div>
-                                        <label className="block text-xs text-slate-400 mb-1">患者姓名</label>
+                                        <label className="block text-xs text-slate-400 mb-1">病名 (ICD-10)</label>
                                         <input 
                                             type="text" 
-                                            value={patientName}
-                                            onChange={(e) => setPatientName(e.target.value)}
-                                            placeholder="請輸入姓名..."
+                                            value={diagnosis}
+                                            onChange={(e) => setDiagnosis(e.target.value)}
+                                            placeholder="例如：H04.123 乾眼症"
                                             className="w-full bg-slate-900 border border-slate-500 rounded p-2 text-white focus:border-teal-500 outline-none"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-400 mb-1">開立日期</label>
+                                        <label className="block text-xs text-slate-400 mb-1">脈象</label>
                                         <input 
-                                            type="date" 
-                                            value={visitDate}
-                                            onChange={(e) => setVisitDate(e.target.value)}
+                                            type="text" 
+                                            value={pulse}
+                                            onChange={(e) => setPulse(e.target.value)}
+                                            placeholder="例如：弦滑"
                                             className="w-full bg-slate-900 border border-slate-500 rounded p-2 text-white focus:border-teal-500 outline-none"
                                         />
                                     </div>
@@ -180,48 +204,45 @@
                     <div className="w-full md:w-2/3 bg-gray-100 p-4 md:p-8 overflow-y-auto">
                         
                         {/* A4 紙張模擬 */}
-                        <div id="print-area" className="bg-white mx-auto shadow-xl p-8 md:p-12 w-[210mm] min-h-[297mm] text-black relative">
+                        <div id="print-area" className="bg-white mx-auto shadow-xl p-8 md:p-12 w-[210mm] min-h-[297mm] text-black relative flex flex-col">
                             
-                            {/* Header */}
-                            <div className="border-b-4 border-gray-800 pb-4 mb-6 flex justify-between items-start">
-                                <div className="flex-1">
-                                    <h1 className="text-3xl font-serif font-bold tracking-wide leading-none mb-2">{CLINIC_INFO.nameZh}</h1>
-                                    <h2 className="text-lg font-bold text-gray-600 tracking-wider mb-2">{CLINIC_INFO.nameEn}</h2>
-                                    <div className="text-sm text-gray-600 font-sans leading-relaxed">
-                                        <p>地址：{CLINIC_INFO.address}</p>
-                                        <p>電話：{CLINIC_INFO.phone}</p>
-                                        <p>主治醫師：<span className="font-semibold text-gray-900 text-lg">{CLINIC_INFO.physician}</span></p>
-                                    </div>
+                            {/* --- 頂部標題區 --- */}
+                            <div className="text-center mb-10 pt-4">
+                                <div className="inline-block border-b-2 border-gray-800 pb-3 px-8 mb-2">
+                                    <h1 className="text-3xl font-serif font-bold tracking-[0.2em] text-gray-900">
+                                        {CLINIC_INFO.physician} 中醫水煎藥處方箋
+                                    </h1>
                                 </div>
-                                <div className="w-24 h-24 border-2 border-red-800 rounded-md flex items-center justify-center text-red-800 opacity-80 flex-shrink-0 ml-4">
-                                    <span className="text-sm text-center font-serif font-bold leading-tight writing-vertical-rl" style={{writingMode: 'vertical-rl'}}>
-                                        祥峻中醫<br/>診所之印
-                                    </span>
-                                </div>
+                                <p className="text-xs text-gray-500 tracking-[0.3em] font-serif uppercase">
+                                    TCM Herbal Prescription (Decoction)
+                                </p>
                             </div>
 
-                            {/* Title */}
-                            <h2 className="text-center text-2xl font-bold serif mb-8 tracking-[0.5em] border-b-2 border-gray-800 pb-2">
-                                中醫水煎藥處方箋
-                            </h2>
-
-                            {/* Patient Info */}
+                            {/* --- I. Patient Info --- */}
                             <div className="mb-8">
                                 <h3 className="font-bold text-md text-gray-800 mb-2 border-b border-gray-300 pb-1">一、患者資訊</h3>
                                 <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-base serif">
-                                    <div className="flex justify-between py-1">
+                                    <div className="flex justify-between py-1 border-b border-gray-50">
                                         <span className="font-semibold text-gray-600">姓名：</span>
                                         <span className="font-bold text-xl">{patientName}</span>
                                     </div>
-                                    <div className="flex justify-between py-1">
-                                        <span className="font-semibold text-gray-600">就診日期：</span>
+                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                                        <span className="font-semibold text-gray-600">開立日期：</span>
                                         <span className="font-mono text-lg">{visitDate}</span>
+                                    </div>
+                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                                        <span className="font-semibold text-gray-600">病名 (ICD-10)：</span>
+                                        <span className="font-bold text-lg">{diagnosis}</span>
+                                    </div>
+                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                                        <span className="font-semibold text-gray-600">脈象：</span>
+                                        <span className="font-bold text-lg">{pulse}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Prescription */}
-                            <div className="mb-6">
+                            {/* --- II. Prescription --- */}
+                            <div className="mb-6 flex-1">
                                 <h3 className="font-bold text-md text-gray-800 mb-4 border-b border-gray-300 pb-1">二、處方明細</h3>
                                 
                                 <div className="mb-6">
@@ -255,11 +276,11 @@
 
                                 {/* 其他項目 */}
                                 {parsedData.others.length > 0 && (
-                                    <div className="mt-8 pt-4 border-t border-gray-800">
-                                        <h4 className="text-sm font-bold text-gray-700 mb-2">備註 / 其他項目</h4>
+                                    <div className="mt-8 pt-4 border-t border-gray-300">
+                                        <h4 className="text-sm font-bold text-gray-600 mb-2">補充項目</h4>
                                         <div className="grid grid-cols-2 gap-4">
                                             {parsedData.others.map((item, i) => (
-                                                <div key={i} className="text-sm text-gray-800">
+                                                <div key={i} className="text-sm text-gray-700">
                                                     • {item.name}： <span className="font-mono font-bold">{item.dose} {item.unit}</span>
                                                 </div>
                                             ))}
@@ -268,20 +289,21 @@
                                 )}
                             </div>
 
-                            {/* Footer */}
-                            <div className="mt-12 pt-8 border-t-2 border-gray-800 break-inside-avoid absolute bottom-12 w-[calc(100%-6rem)]">
-                                <div className="flex justify-between items-end">
-                                    <div className="text-left w-2/3">
-                                        <p className="text-sm text-gray-600 mb-1">醫囑：</p>
-                                        <p className="text-sm text-gray-500 italic">
-                                            1. 請遵照醫師指示服用。<br/>
-                                            2. 服藥期間請忌食生冷、油膩、辛辣刺激之物。<br/>
-                                            3. 若有不適請立即停藥並回診諮詢。
+                            {/* --- III. Footer 醫囑與診所資訊 --- */}
+                            <div className="mt-auto pt-8 border-t-2 border-gray-800 break-inside-avoid">
+                                <div className="flex justify-between items-end mb-6">
+                                    <div className="text-left w-2/3 pr-4">
+                                        <p className="text-sm font-bold text-gray-700 mb-2">醫師叮嚀：</p>
+                                        <p className="text-sm text-gray-600 leading-relaxed">
+                                            1. 藥物能協助疏通路徑，但真正決定療效的是您的生活與情緒。<br/>
+                                            2. 治療的終點不是數據的完美，而是找回生活的品質與平靜。<br/>
+                                            3. 服藥期間若有任何不適，請先停藥，並於回診時討論。
                                         </p>
                                     </div>
                                     <div className="w-1/3 text-right">
                                         <div className="inline-block text-center">
                                             <div className="mb-2 relative">
+                                                {/* 蓋章區 */}
                                                 <div className="w-20 h-20 border-2 border-red-300 rounded-full absolute -top-6 left-1/2 transform -translate-x-1/2 opacity-30 flex items-center justify-center">
                                                     <span className="text-red-300 text-xs transform -rotate-12">醫師章</span>
                                                 </div>
@@ -289,8 +311,19 @@
                                                     {CLINIC_INFO.physician}
                                                 </p>
                                             </div>
-                                            <p className="text-xs text-gray-600 mt-1">執業執照：{CLINIC_INFO.license}</p>
+                                            <p className="text-xs text-gray-500 mt-1">執照號：{CLINIC_INFO.license}</p>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* 最下方的診所資訊 */}
+                                <div className="border-t border-gray-200 pt-3 flex flex-wrap justify-between items-center text-xs text-gray-400">
+                                    <div className="flex gap-4">
+                                        <span className="font-bold text-gray-500">看診院所：{CLINIC_INFO.nameZh}</span>
+                                        <span>電話：{CLINIC_INFO.phone}</span>
+                                    </div>
+                                    <div>
+                                        <span>地址：{CLINIC_INFO.address}</span>
                                     </div>
                                 </div>
                             </div>
