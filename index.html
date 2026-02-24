@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>林佑彥醫師 - 水煎藥處方生成器 (個人專屬版 v4)</title>
+    <title>林佑彥醫師 - 水煎藥處方生成器 (全中文同步版 v7)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -39,16 +39,47 @@
             license: "台中字第010625號"
         };
 
+        // 專科與內科常用 ICD-10 繁體中文對照表
+        const LOCAL_ICD_DICT = {
+            "H04.123": "乾眼症 (雙眼)",
+            "H04.121": "乾眼症 (右眼)",
+            "H04.122": "乾眼症 (左眼)",
+            "H43.39": "飛蚊症 (其他玻璃體混濁)",
+            "H43.1": "玻璃體出血",
+            "H25.9": "老年性白內障",
+            "H40.9": "青光眼",
+            "H40.11": "原發性開角型青光眼",
+            "H35.30": "黃斑部退化",
+            "H35.81": "視網膜水腫",
+            "H52.1": "近視",
+            "H52.4": "老花眼",
+            "H01.0": "眼瞼炎",
+            "H00.0": "麥粒腫 (針眼)",
+            "H00.1": "霰粒腫",
+            "H10.9": "結膜炎",
+            "E11.9": "第二型糖尿病",
+            "E11.319": "第二型糖尿病併視網膜病變",
+            "I10": "原發性高血壓",
+            "G47.00": "失眠",
+            "G47.9": "睡眠障礙",
+            "J30.4": "過敏性鼻炎",
+            "K21.9": "胃食道逆流",
+            "F41.9": "焦慮症",
+            "F32.9": "憂鬱症",
+            "M54.5": "下背痛",
+            "R53.83": "疲倦"
+        };
+
         // Icons
         const IconWrapper = ({ children, className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>;
         const Printer = ({ className }) => <IconWrapper className={className}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></IconWrapper>;
         const Syringe = ({ className }) => <IconWrapper className={className}><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></IconWrapper>;
         const User = ({ className }) => <IconWrapper className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconWrapper>;
+        const RefreshIcon = ({ className }) => <IconWrapper className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconWrapper>;
 
         // --- 2. 主程式 ---
         function App() {
-            // 預設病歷內容
-            const DEFAULT_TEXT = `病名：H04.123 乾眼症
+            const DEFAULT_TEXT = `病名：H04.123
 脈象：弦細
 醫師：林佑彥  自費  (內)  [       -]
 用藥：2 x14/1天2次    
@@ -60,17 +91,66 @@
       雲茯苓(自) 1.0錢  葛根(自)(?1.0錢  桑寄生(自) 1.0錢
       旱蓮草(自) 1.0錢  地骨皮(自) 1.0錢  牡丹皮(自) 1.0錢
       細辛(自)(?0.5錢  生甘草(自) 1.0錢  紅大棗(自) 1.0錢
-      酒大黃(自) 1.0錢  飲片代煎費 1.0天  飲片代寄運 1.0 `;
+      酒大黃(自) 1.0錢  飲片代煎費 1.0天  飲片代寄運 1.0 
+      自費藥品處方籤費 1.0  自費藥品調劑費 1.0`;
 
-            // State
             const [rawText, setRawText] = useState(DEFAULT_TEXT);
             const [patientName, setPatientName] = useState("");
             const [visitDate, setVisitDate] = useState(new Date().toISOString().split('T')[0]);
             const [pulse, setPulse] = useState("");
             const [diagnosis, setDiagnosis] = useState("");
+            const [medicationInfo, setMedicationInfo] = useState("");
+            const [isSyncing, setIsSyncing] = useState(false);
             const [parsedData, setParsedData] = useState({ medicines: [], others: [] });
 
-            // --- 核心邏輯：強效文字解析器 ---
+            const handleSyncICD = async () => {
+                const match = diagnosis.match(/[A-Za-z]\d{2}(?:\.[A-Za-z0-9]+)?/);
+                if (!match) {
+                    alert("請先輸入有效的 ICD-10 代碼 (例如: H04.123 或 E11.9)");
+                    return;
+                }
+
+                const code = match[0].toUpperCase();
+                setIsSyncing(true);
+
+                try {
+                    if (LOCAL_ICD_DICT[code]) {
+                        setDiagnosis(`${code} ${LOCAL_ICD_DICT[code]}`);
+                        setIsSyncing(false);
+                        return;
+                    }
+
+                    const res = await fetch(`https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/search?terms=${code}`);
+                    const data = await res.json();
+
+                    if (data[0] > 0) {
+                        const fetchedCode = data[3][0][0];
+                        const fetchedNameEn = data[3][0][1];
+                        
+                        try {
+                            const transRes = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(fetchedNameEn)}&langpair=en|zh-TW`);
+                            const transData = await transRes.json();
+                            const fetchedNameZh = transData.responseData.translatedText;
+                            
+                            if(fetchedNameZh && !fetchedNameZh.includes("MYMEMORY")) {
+                                setDiagnosis(`${fetchedCode} ${fetchedNameZh}`);
+                            } else {
+                                setDiagnosis(`${fetchedCode} ${fetchedNameEn}`);
+                            }
+                        } catch (translateError) {
+                            setDiagnosis(`${fetchedCode} ${fetchedNameEn}`);
+                        }
+                    } else {
+                        alert(`線上資料庫找不到代碼：${code}`);
+                    }
+                } catch (error) {
+                    console.error("同步失敗:", error);
+                    alert("同步失敗，請檢查網路連線。");
+                } finally {
+                    setIsSyncing(false);
+                }
+            };
+
             const parsePrescription = (text) => {
                 const medicines = [];
                 const others = [];
@@ -82,34 +162,55 @@
                 }
 
                 // 擷取病名 (ICD-10)
-                const dxMatch = text.match(/(?:病名|診斷|ICD(?:-10)?)[^\w\u4e00-\u9fa5]*([^\n]+)/);
+                const dxMatch = text.match(/(?:病名|診斷|ICD(?:-10)?)[^\w\u4e00-\u9fa5]*([A-Za-z]\d{2}(?:\.[A-Za-z0-9]+)?)([^\n]*)/);
                 if (dxMatch) {
-                    setDiagnosis(dxMatch[1].trim());
+                    const code = dxMatch[1].toUpperCase();
+                    const restOfLine = dxMatch[2].trim();
+                    
+                    if (LOCAL_ICD_DICT[code] && !restOfLine.includes(LOCAL_ICD_DICT[code])) {
+                        setDiagnosis(`${code} ${LOCAL_ICD_DICT[code]}`);
+                    } else {
+                        setDiagnosis(`${code} ${restOfLine}`.trim());
+                    }
+                }
+
+                // 擷取用藥天數與頻率
+                const medMatch = text.match(/用藥：.*?([Xx])\s*(\d+)\s*\/\s*1天\s*(\d+)\s*次/i);
+                if (medMatch) {
+                    const days = medMatch[2];
+                    const times = medMatch[3];
+                    let timeStr = `每日${times}次`;
+                    if (times === "2") timeStr = "早晚服用";
+                    if (times === "3") timeStr = "三餐服用";
+                    setMedicationInfo(`${days}天份，${timeStr}`);
+                } else {
+                    setMedicationInfo("");
                 }
 
                 let cleanText = text.replace(/醫師：.*?\n/, '') 
                                     .replace(/用藥：.*?\n/, '') 
                                     .replace(/處方：/, '');    
 
-                // 全域 Regex 搜尋：解決文字沾黏，抓出藥名與劑量
                 const regex = /([\u4e00-\u9fa5]+)(?:[\(\)自\?\[\]\s]*?)(\d+(?:\.\d+)?)(?:[錢天次g克])?/g;
                 const matches = [...cleanText.matchAll(regex)];
+
+                // 嚴格過濾行政與無效資訊
+                const excludeItems = ["代煎", "寄運", "處方籤", "處方簽", "調劑", "掛號"];
 
                 matches.forEach(match => {
                     const name = match[1];
                     const dose = match[2];
                     
                     if (["錢", "天", "次", "克", "公克", "日", "帖"].includes(name)) return;
+                    
+                    // 若包含排除關鍵字，則直接捨棄
+                    if (excludeItems.some(ex => name.includes(ex))) return;
 
                     let unit = "錢"; 
-                    if (name.includes("代煎") || name.includes("天")) unit = "天";
-                    else if (name.includes("寄運") || name.includes("次")) unit = "次";
+                    if (name.includes("天")) unit = "天";
+                    else if (name.includes("次")) unit = "次";
 
-                    if (name.includes("代煎") || name.includes("寄運") || name.includes("掛號")) {
-                        others.push({ name, dose, unit });
-                    } else {
-                        medicines.push({ name_zh: name, dosage: dose, unit: "錢" });
-                    }
+                    medicines.push({ name_zh: name, dosage: dose, unit: "錢" });
                 });
 
                 setParsedData({ medicines, others });
@@ -118,6 +219,8 @@
             useEffect(() => {
                 parsePrescription(rawText);
             }, [rawText]);
+
+            const displayDiagnosis = diagnosis.replace(/^[A-Za-z]\d{2}(?:\.[A-Za-z0-9]+)?\s*/, '');
 
             return (
                 <div className="min-h-screen pb-10 flex flex-col md:flex-row">
@@ -154,14 +257,25 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-slate-400 mb-1">病名 (ICD-10)</label>
-                                        <input 
-                                            type="text" 
-                                            value={diagnosis}
-                                            onChange={(e) => setDiagnosis(e.target.value)}
-                                            placeholder="例如：H04.123 乾眼症"
-                                            className="w-full bg-slate-900 border border-slate-500 rounded p-2 text-white focus:border-teal-500 outline-none"
-                                        />
+                                        <label className="block text-xs text-slate-400 mb-1">病名 (輸入代碼後可自動翻譯)</label>
+                                        <div className="flex">
+                                            <input 
+                                                type="text" 
+                                                value={diagnosis}
+                                                onChange={(e) => setDiagnosis(e.target.value)}
+                                                onKeyDown={(e) => { if(e.key === 'Enter') handleSyncICD(); }}
+                                                placeholder="輸入代碼如 H04.123"
+                                                className="w-full bg-slate-900 border border-slate-500 rounded-l p-2 text-white focus:border-teal-500 outline-none"
+                                            />
+                                            <button 
+                                                onClick={handleSyncICD}
+                                                disabled={isSyncing}
+                                                className="bg-teal-600 hover:bg-teal-500 text-white px-3 rounded-r border border-teal-600 flex items-center justify-center transition-colors"
+                                                title="從線上庫同步並翻譯病名"
+                                            >
+                                                {isSyncing ? <RefreshIcon className="w-4 h-4 animate-spin" /> : <RefreshIcon className="w-4 h-4" />}
+                                            </button>
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="block text-xs text-slate-400 mb-1">脈象</label>
@@ -185,9 +299,9 @@
                                     spellCheck="false"
                                     placeholder="請貼上包含處方的文字..."
                                 ></textarea>
-                                <div className="mt-2 flex justify-between text-xs text-slate-400 border-t border-slate-600 pt-2">
+                                <div className="mt-2 flex justify-between items-center text-xs text-slate-400 border-t border-slate-600 pt-2">
                                     <span>藥材：{parsedData.medicines.length} 味</span>
-                                    <span>其他：{parsedData.others.length} 項</span>
+                                    {medicationInfo && <span className="text-teal-300">{medicationInfo}</span>}
                                 </div>
                             </div>
 
@@ -231,8 +345,8 @@
                                         <span className="font-mono text-lg">{visitDate}</span>
                                     </div>
                                     <div className="flex justify-between py-1 border-b border-gray-50">
-                                        <span className="font-semibold text-gray-600">病名 (ICD-10)：</span>
-                                        <span className="font-bold text-lg">{diagnosis}</span>
+                                        <span className="font-semibold text-gray-600">病名：</span>
+                                        <span className="font-bold text-lg">{displayDiagnosis}</span>
                                     </div>
                                     <div className="flex justify-between py-1 border-b border-gray-50">
                                         <span className="font-semibold text-gray-600">脈象：</span>
@@ -248,7 +362,6 @@
                                 <div className="mb-6">
                                     <div className="flex justify-between items-end mb-3">
                                         <h4 className="font-bold text-md text-gray-700">【內服水煎藥】</h4>
-                                        <span className="text-sm text-gray-500">用法：水煎服，每日一帖</span>
                                     </div>
 
                                     {/* 3欄並列 Grid */}
@@ -265,28 +378,19 @@
                                         ))}
                                     </div>
 
-                                    {/* 總結 */}
+                                    {/* 總結區塊：顯示天數、頻率與總味數 */}
                                     {parsedData.medicines.length > 0 && (
-                                        <div className="mt-4 pt-2 text-right">
-                                            <span className="text-sm text-gray-500 mr-2">總計藥味：</span>
-                                            <span className="font-bold text-lg">{parsedData.medicines.length} 味</span>
+                                        <div className="mt-6 pt-3 border-t border-gray-300 flex justify-between items-center">
+                                            <div className="text-xl font-bold font-serif text-gray-800 tracking-wide">
+                                                {medicationInfo && <span>{medicationInfo}</span>}
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-500 mr-2">總計藥材：</span>
+                                                <span className="font-bold text-xl">{parsedData.medicines.length} <span className="text-sm font-normal text-gray-600">味</span></span>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-
-                                {/* 其他項目 */}
-                                {parsedData.others.length > 0 && (
-                                    <div className="mt-8 pt-4 border-t border-gray-300">
-                                        <h4 className="text-sm font-bold text-gray-600 mb-2">補充項目</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            {parsedData.others.map((item, i) => (
-                                                <div key={i} className="text-sm text-gray-700">
-                                                    • {item.name}： <span className="font-mono font-bold">{item.dose} {item.unit}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
                             {/* --- III. Footer 醫囑與診所資訊 --- */}
