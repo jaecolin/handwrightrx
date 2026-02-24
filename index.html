@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>林佑彥醫師 - 水煎藥處方生成器 (A4單頁明體優化版 v10)</title>
+    <title>林佑彥醫師 - 水煎藥處方生成器 (患者資訊排版優化 v14)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -66,22 +66,7 @@
         };
 
         const LOCAL_ICD_DICT = {
-            "H04.123": "乾眼症 (雙眼)",
-            "H04.121": "乾眼症 (右眼)",
-            "H04.122": "乾眼症 (左眼)",
-            "H43.39": "飛蚊症 (其他玻璃體混濁)",
-            "H43.1": "玻璃體出血",
-            "H25.9": "老年性白內障",
-            "H40.9": "青光眼",
-            "H40.11": "原發性開角型青光眼",
-            "H35.30": "黃斑部退化",
-            "H35.81": "視網膜水腫",
-            "H52.1": "近視",
-            "H52.4": "老花眼",
-            "H01.0": "眼瞼炎",
-            "H00.0": "麥粒腫 (針眼)",
-            "H00.1": "霰粒腫",
-            "H10.9": "結膜炎",
+            // --- 內科與體質常見 ---
             "E11.9": "第二型糖尿病",
             "E11.319": "第二型糖尿病併視網膜病變",
             "I10": "原發性高血壓",
@@ -92,7 +77,49 @@
             "F41.9": "焦慮症",
             "F32.9": "憂鬱症",
             "M54.5": "下背痛",
-            "R53.83": "疲倦"
+            "R53.83": "疲倦",
+
+            // --- 眼科常見清單 (擴充後) ---
+            "H00.0": "麥粒腫",
+            "H00.1": "霰粒腫",
+            "H01.0": "眼瞼炎",
+            "H02.0": "瞼內翻",
+            "H02.1": "瞼外翻",
+            "H02.4": "眼瞼下垂",
+            "H04.1": "乾眼症",
+            "H04.121": "乾眼症 (右眼)",
+            "H04.122": "乾眼症 (左眼)",
+            "H04.123": "乾眼症 (雙眼)",
+            "H04.2": "淚溢",
+            "H10.0": "結膜炎",
+            "H10.1": "急性異位性結膜炎",
+            "H10.9": "結膜炎",
+            "H11.0": "翼狀胬肉",
+            "H16.0": "角膜潰瘍",
+            "H16.1": "結膜角膜炎",
+            "H18.0": "角膜色素沉著",
+            "H20.0": "急性及亞急性虹膜睫狀體炎",
+            "H25.0": "老年性初發性白內障",
+            "H25.9": "老年性白內障, 未明示",
+            "H26.0": "嬰兒、少年和初老性白內障",
+            "H26.9": "白內障, 未明示",
+            "H30.0": "局限性脈絡膜視網膜發炎",
+            "H33.0": "視網膜剝離伴有視網膜裂孔",
+            "H35.0": "背景視網膜病變",
+            "H35.3": "黃斑部變性",
+            "H35.30": "黃斑部退化",
+            "H35.81": "視網膜水腫",
+            "H36.0": "糖尿病性視網膜病變",
+            "H40.1": "原發性開角型青光眼",
+            "H40.11": "原發性開角型青光眼",
+            "H40.2": "原發性閉角型青光眼",
+            "H40.9": "青光眼",
+            "H43.1": "玻璃體出血",
+            "H43.3": "玻璃體膜混濁",
+            "H43.39": "飛蚊症 (其他玻璃體混濁)",
+            "H44.0": "化膿性眼內炎",
+            "H52.1": "近視",
+            "H52.4": "老花眼"
         };
 
         const IconWrapper = ({ children, className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>;
@@ -103,8 +130,8 @@
 
         function App() {
             const DEFAULT_TEXT = `病名：H04.123
-脈象：弦細
-醫師：林佑彥  自費  (內)  [       -]
+醫師：林佑彥  自費  (內)  [      -]
+脈象：左寸促關尺滑,右寸促關弦尺滑
 用藥：2 x14/1天2次    
 處方：柴胡(自)(?1.5錢  黃芩(自)(?1.5錢  薑半夏(自) 1.0錢
       山梔子(自) 0.5錢  茵陳蒿(自) 0.5錢  夏枯草(自) 1.0錢
@@ -114,8 +141,7 @@
       雲茯苓(自) 1.0錢  葛根(自)(?1.0錢  桑寄生(自) 1.0錢
       旱蓮草(自) 1.0錢  地骨皮(自) 1.0錢  牡丹皮(自) 1.0錢
       細辛(自)(?0.5錢  生甘草(自) 1.0錢  紅大棗(自) 1.0錢
-      酒大黃(自) 1.0錢  飲片代煎費 1.0天  飲片代寄運 1.0 
-      自費藥品處方籤費 1.0  自費藥品調劑費 1.0`;
+      酒大黃(自) 1.0錢  飲片代煎費 1.0天  飲片代寄運 1.0`;
 
             const [rawText, setRawText] = useState(DEFAULT_TEXT);
             const [patientName, setPatientName] = useState("");
@@ -338,7 +364,7 @@
                         <div id="print-area" className="bg-white shadow-xl w-[210mm] h-[297mm] p-8 md:p-10 relative flex flex-col text-black box-border overflow-hidden">
                             
                             {/* --- 頂部標題區 (一行並列、明體 Noto Serif TC) --- */}
-                            <div className="text-center mb-6 pt-2 border-b-2 border-gray-800 pb-3">
+                            <div className="text-center mb-6 pt-2 border-b-2 border-gray-800 pb-3 flex-shrink-0">
                                 <div className="flex justify-center items-baseline flex-wrap gap-x-4 gap-y-1">
                                     <h1 className="text-2xl md:text-[28px] font-ming font-bold tracking-[0.1em] text-gray-900">
                                         {CLINIC_INFO.physician} 中醫水煎藥處方箋
@@ -349,75 +375,76 @@
                                 </div>
                             </div>
 
-                            {/* --- I. Patient Info (明體，縮減間距) --- */}
-                            <div className="mb-4 font-ming">
+                            {/* --- I. Patient Info (排版調整：三行呈現) --- */}
+                            <div className="mb-4 font-ming flex-shrink-0">
                                 <h3 className="font-bold text-sm text-gray-800 mb-2 border-b border-gray-300 pb-1">一、患者資訊</h3>
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                                    {/* 第一行：姓名與日期 */}
                                     <div className="flex justify-between py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600">姓名：</span>
-                                        <span className="font-bold text-base">{patientName}</span>
+                                        <span className="font-semibold text-gray-600 shrink-0">姓名：</span>
+                                        <span className="font-bold text-base text-right">{patientName}</span>
                                     </div>
                                     <div className="flex justify-between py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600">開立日期：</span>
-                                        <span className="font-mono text-base">{visitDate}</span>
+                                        <span className="font-semibold text-gray-600 shrink-0">開立日期：</span>
+                                        <span className="font-mono text-base text-right">{visitDate}</span>
                                     </div>
-                                    <div className="flex justify-between py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600">病名：</span>
-                                        <span className="font-bold text-base">{displayDiagnosis}</span>
+                                    
+                                    {/* 第二行：脈象 (全寬) */}
+                                    <div className="col-span-2 flex py-1 border-b border-gray-100">
+                                        <span className="font-semibold text-gray-600 w-20 shrink-0">脈象：</span>
+                                        <span className="font-bold text-base flex-1">{pulse}</span>
                                     </div>
-                                    <div className="flex justify-between py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600">脈象：</span>
-                                        <span className="font-bold text-base">{pulse}</span>
+                                    
+                                    {/* 第三行：病名 (全寬) */}
+                                    <div className="col-span-2 flex py-1 border-b border-gray-100">
+                                        <span className="font-semibold text-gray-600 w-20 shrink-0">病名：</span>
+                                        <span className="font-bold text-base flex-1">{displayDiagnosis}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* --- II. Prescription (明體，密集排版防止超出) --- */}
-                            <div className="mb-2 flex-1 font-ming overflow-hidden flex flex-col">
+                            {/* --- II. Prescription (明體，內容靠上對齊 content-start) --- */}
+                            <div className="flex-1 font-ming flex flex-col overflow-hidden">
                                 <h3 className="font-bold text-sm text-gray-800 mb-2 border-b border-gray-300 pb-1 flex-shrink-0">二、處方明細</h3>
                                 
-                                <div className="flex-1 flex flex-col overflow-hidden">
-                                    <div className="flex justify-between items-end mb-2 flex-shrink-0">
-                                        <h4 className="font-bold text-sm text-gray-700">【內服水煎藥】</h4>
-                                    </div>
+                                <div className="flex justify-between items-end mb-2 flex-shrink-0">
+                                    <h4 className="font-bold text-sm text-gray-700">【內服水煎藥】</h4>
+                                </div>
 
-                                    {/* 3欄並列 Grid：壓縮行高(gap-y-2)、字體適中 */}
-                                    <div className="grid grid-cols-3 gap-x-6 gap-y-2 border-t-2 border-gray-800 pt-3 flex-1 overflow-hidden">
-                                        {parsedData.medicines.map((item, i) => (
-                                            <div key={i} className="flex justify-between items-baseline border-b border-dashed border-gray-300 pb-1 px-1">
-                                                <span className="text-base font-bold text-gray-900 tracking-wide">
-                                                    {item.name_zh}
-                                                </span>
-                                                <span className="text-sm font-mono font-bold text-gray-800">
-                                                    {item.dosage} <span className="text-xs font-normal text-gray-600">錢</span>
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* 總結區塊：顯示天數、頻率與總味數 */}
-                                    {parsedData.medicines.length > 0 && (
-                                        <div className="mt-3 pt-2 border-t border-gray-300 flex justify-between items-center flex-shrink-0">
-                                            <div className="text-base font-bold text-gray-800 tracking-wide">
-                                                {medicationInfo && <span>{medicationInfo}</span>}
-                                            </div>
-                                            <div>
-                                                <span className="text-xs text-gray-500 mr-2">總計藥材：</span>
-                                                <span className="font-bold text-lg">{parsedData.medicines.length} <span className="text-xs font-normal text-gray-600">味</span></span>
-                                            </div>
+                                {/* 3欄並列 Grid：增加行高 (gap-y-2)、加強垂直 padding (py-1.5) 給予呼吸空間 */}
+                                <div className="grid grid-cols-3 gap-x-6 gap-y-2 content-start border-t-2 border-gray-800 pt-4 flex-1 overflow-hidden">
+                                    {parsedData.medicines.map((item, i) => (
+                                        <div key={i} className="flex justify-between items-baseline border-b border-dashed border-gray-300 py-1.5 px-1">
+                                            <span className="text-base font-bold text-gray-900 tracking-wide leading-relaxed">
+                                                {item.name_zh}
+                                            </span>
+                                            <span className="text-sm font-mono font-bold text-gray-800 leading-relaxed">
+                                                {item.dosage} <span className="text-xs font-normal text-gray-600">錢</span>
+                                            </span>
                                         </div>
-                                    )}
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* --- 天數與總計 (使用 mt-auto 保證與底部醫囑緊密貼合併沉底) --- */}
+                            <div className="mt-auto pt-3 border-t border-gray-300 flex justify-between items-center flex-shrink-0 font-ming">
+                                <div className="text-base font-bold text-gray-800 tracking-wide">
+                                    {medicationInfo && <span>{medicationInfo}</span>}
+                                </div>
+                                <div>
+                                    <span className="text-xs text-gray-500 mr-2">總計藥材：</span>
+                                    <span className="font-bold text-lg">{parsedData.medicines.length} <span className="text-xs font-normal text-gray-600">味</span></span>
                                 </div>
                             </div>
 
                             {/* --- III. Footer 醫囑與診所資訊 (黑體) --- */}
-                            <div className="mt-auto pt-4 border-t-2 border-gray-800 font-hei flex-shrink-0">
+                            <div className="pt-4 border-t-2 border-gray-800 font-hei flex-shrink-0">
                                 <div className="flex justify-between items-end mb-4">
                                     <div className="text-left w-2/3 pr-2">
                                         <p className="text-xs font-bold text-gray-700 mb-1">醫師叮嚀：</p>
                                         <p className="text-xs text-gray-600 leading-relaxed">
-                                            1. 藥物能協助疏通路徑，真正決定療效的關鍵在於您的生活與情緒。<br/>
-                                            2. 放下對數據完美的執著，治療的終點在於找回生活的品質與平靜。<br/>
+                                            1. 藥物僅輔助疏通，療效關鍵仍在您的生活作息與情緒。<br/>
+                                            2. 放下對數據的執著，治療終點在找回生活品質與平靜。<br/>
                                             3. 服藥期間若有任何不適，請先停藥，並於回診時討論。
                                         </p>
                                     </div>
@@ -441,10 +468,10 @@
                                 <div className="border-t border-gray-200 pt-2 flex flex-wrap justify-between items-center text-[10px] text-gray-400">
                                     <div className="flex gap-4">
                                         <span className="font-bold text-gray-500">{CLINIC_INFO.nameZh}</span>
-                                        <span>TEL: {CLINIC_INFO.phone}</span>
+                                        <span>電話: {CLINIC_INFO.phone}</span>
                                     </div>
                                     <div>
-                                        <span>ADD: {CLINIC_INFO.address}</span>
+                                        <span>地址: {CLINIC_INFO.address}</span>
                                     </div>
                                 </div>
                             </div>
@@ -460,4 +487,3 @@
     </script>
 </body>
 </html>
-```
