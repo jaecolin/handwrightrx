@@ -3,34 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>林佑彥醫師 - 水煎藥處方生成器 (全中文同步版 v7)</title>
+    <title>林佑彥醫師 - 水煎藥處方生成器 (A4單頁明體優化版 v10)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Google Fonts for professional print look -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 引入 Google Fonts：明體 (Noto Serif TC)、黑體 (Noto Sans TC) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; }
-        .serif { font-family: 'Noto Serif TC', serif; }
+        /* 字體類別設定 */
+        .font-ming {
+            font-family: 'Noto Serif TC', 'PMingLiU', 'MingLiU', serif !important;
+        }
+        
+        .font-hei {
+            font-family: 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', sans-serif !important;
+        }
+        
+        /* 嚴格的 A4 列印設定：確保單頁不溢出 */
+        @page {
+            size: A4 portrait;
+            margin: 0; 
+        }
         
         @media print {
             .no-print { display: none !important; }
-            body { background: white; margin: 0; padding: 0; }
-            #print-area { box-shadow: none; margin: 0; width: 100%; max-width: 100%; padding: 0; }
-            @page { margin: 0.5cm; size: A4 portrait; }
+            body { 
+                background: white; 
+                margin: 0; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact;
+            }
+            #print-area { 
+                box-shadow: none !important; 
+                margin: 0 !important; 
+                width: 210mm !important; 
+                height: 297mm !important; 
+                padding: 12mm 15mm !important; /* 縮減列印邊界，爭取更多內容空間 */
+                box-sizing: border-box !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+                overflow: hidden !important; /* 強制不溢出 */
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-gray-100 text-gray-900 font-ming">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- 1. 資料與設定 ---
         const CLINIC_INFO = {
             nameZh: "祥峻中醫診所",
             address: "台中市西屯區市政北一路1號6樓之1",
@@ -39,7 +65,6 @@
             license: "台中字第010625號"
         };
 
-        // 專科與內科常用 ICD-10 繁體中文對照表
         const LOCAL_ICD_DICT = {
             "H04.123": "乾眼症 (雙眼)",
             "H04.121": "乾眼症 (右眼)",
@@ -70,14 +95,12 @@
             "R53.83": "疲倦"
         };
 
-        // Icons
         const IconWrapper = ({ children, className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>;
         const Printer = ({ className }) => <IconWrapper className={className}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></IconWrapper>;
         const Syringe = ({ className }) => <IconWrapper className={className}><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></IconWrapper>;
         const User = ({ className }) => <IconWrapper className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconWrapper>;
         const RefreshIcon = ({ className }) => <IconWrapper className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconWrapper>;
 
-        // --- 2. 主程式 ---
         function App() {
             const DEFAULT_TEXT = `病名：H04.123
 脈象：弦細
@@ -155,13 +178,11 @@
                 const medicines = [];
                 const others = [];
 
-                // 擷取脈象
                 const pulseMatch = text.match(/脈[象診]?\s*[:：]\s*([^\s\n]+)/);
                 if (pulseMatch) {
                     setPulse(pulseMatch[1].trim());
                 }
 
-                // 擷取病名 (ICD-10)
                 const dxMatch = text.match(/(?:病名|診斷|ICD(?:-10)?)[^\w\u4e00-\u9fa5]*([A-Za-z]\d{2}(?:\.[A-Za-z0-9]+)?)([^\n]*)/);
                 if (dxMatch) {
                     const code = dxMatch[1].toUpperCase();
@@ -174,7 +195,6 @@
                     }
                 }
 
-                // 擷取用藥天數與頻率
                 const medMatch = text.match(/用藥：.*?([Xx])\s*(\d+)\s*\/\s*1天\s*(\d+)\s*次/i);
                 if (medMatch) {
                     const days = medMatch[2];
@@ -194,7 +214,6 @@
                 const regex = /([\u4e00-\u9fa5]+)(?:[\(\)自\?\[\]\s]*?)(\d+(?:\.\d+)?)(?:[錢天次g克])?/g;
                 const matches = [...cleanText.matchAll(regex)];
 
-                // 嚴格過濾行政與無效資訊
                 const excludeItems = ["代煎", "寄運", "處方籤", "處方簽", "調劑", "掛號"];
 
                 matches.forEach(match => {
@@ -202,8 +221,6 @@
                     const dose = match[2];
                     
                     if (["錢", "天", "次", "克", "公克", "日", "帖"].includes(name)) return;
-                    
-                    // 若包含排除關鍵字，則直接捨棄
                     if (excludeItems.some(ex => name.includes(ex))) return;
 
                     let unit = "錢"; 
@@ -223,9 +240,9 @@
             const displayDiagnosis = diagnosis.replace(/^[A-Za-z]\d{2}(?:\.[A-Za-z0-9]+)?\s*/, '');
 
             return (
-                <div className="min-h-screen pb-10 flex flex-col md:flex-row">
+                <div className="min-h-screen pb-10 flex flex-col md:flex-row font-hei text-sm md:text-base">
                     
-                    {/* 左側：輸入區 */}
+                    {/* 左側：輸入區 (網頁操作介面，保留黑體提升可讀性) */}
                     <div className="w-full md:w-1/3 p-6 bg-slate-800 text-white overflow-y-auto h-screen sticky top-0 no-print z-10">
                         <h1 className="text-2xl font-bold mb-6 flex items-center text-teal-400">
                             <Syringe className="mr-2" /> 個人處方生成器
@@ -295,7 +312,7 @@
                                 <textarea 
                                     value={rawText}
                                     onChange={(e) => setRawText(e.target.value)}
-                                    className="w-full h-64 bg-slate-900 border border-slate-500 rounded p-2 text-xs font-mono text-gray-300 focus:border-teal-500 outline-none leading-relaxed"
+                                    className="w-full h-48 bg-slate-900 border border-slate-500 rounded p-2 text-xs font-mono text-gray-300 focus:border-teal-500 outline-none leading-relaxed"
                                     spellCheck="false"
                                     placeholder="請貼上包含處方的文字..."
                                 ></textarea>
@@ -307,72 +324,72 @@
 
                             <button 
                                 onClick={() => window.print()} 
-                                className="w-full py-4 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-lg shadow-lg flex items-center justify-center transition-all"
+                                className="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-lg shadow-lg flex items-center justify-center transition-all"
                             >
                                 <Printer className="mr-2" /> 列印 / 另存 PDF
                             </button>
                         </div>
                     </div>
 
-                    {/* 右側：預覽區 */}
-                    <div className="w-full md:w-2/3 bg-gray-100 p-4 md:p-8 overflow-y-auto">
+                    {/* 右側：預覽區 (嚴格鎖定 A4 尺寸) */}
+                    <div className="w-full md:w-2/3 bg-gray-200 p-2 md:p-8 flex justify-center overflow-y-auto">
                         
-                        {/* A4 紙張模擬 */}
-                        <div id="print-area" className="bg-white mx-auto shadow-xl p-8 md:p-12 w-[210mm] min-h-[297mm] text-black relative flex flex-col">
+                        {/* A4 紙張本體：透過 padding 壓縮版面，爭取資料呈現空間 */}
+                        <div id="print-area" className="bg-white shadow-xl w-[210mm] h-[297mm] p-8 md:p-10 relative flex flex-col text-black box-border overflow-hidden">
                             
-                            {/* --- 頂部標題區 --- */}
-                            <div className="text-center mb-10 pt-4">
-                                <div className="inline-block border-b-2 border-gray-800 pb-3 px-8 mb-2">
-                                    <h1 className="text-3xl font-serif font-bold tracking-[0.2em] text-gray-900">
+                            {/* --- 頂部標題區 (一行並列、明體 Noto Serif TC) --- */}
+                            <div className="text-center mb-6 pt-2 border-b-2 border-gray-800 pb-3">
+                                <div className="flex justify-center items-baseline flex-wrap gap-x-4 gap-y-1">
+                                    <h1 className="text-2xl md:text-[28px] font-ming font-bold tracking-[0.1em] text-gray-900">
                                         {CLINIC_INFO.physician} 中醫水煎藥處方箋
                                     </h1>
+                                    <p className="text-base font-ming text-gray-600 tracking-wider">
+                                        TCM Herbal Prescription
+                                    </p>
                                 </div>
-                                <p className="text-xs text-gray-500 tracking-[0.3em] font-serif uppercase">
-                                    TCM Herbal Prescription (Decoction)
-                                </p>
                             </div>
 
-                            {/* --- I. Patient Info --- */}
-                            <div className="mb-8">
-                                <h3 className="font-bold text-md text-gray-800 mb-2 border-b border-gray-300 pb-1">一、患者資訊</h3>
-                                <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-base serif">
-                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                            {/* --- I. Patient Info (明體，縮減間距) --- */}
+                            <div className="mb-4 font-ming">
+                                <h3 className="font-bold text-sm text-gray-800 mb-2 border-b border-gray-300 pb-1">一、患者資訊</h3>
+                                <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
+                                    <div className="flex justify-between py-1 border-b border-gray-100">
                                         <span className="font-semibold text-gray-600">姓名：</span>
-                                        <span className="font-bold text-xl">{patientName}</span>
+                                        <span className="font-bold text-base">{patientName}</span>
                                     </div>
-                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                                    <div className="flex justify-between py-1 border-b border-gray-100">
                                         <span className="font-semibold text-gray-600">開立日期：</span>
-                                        <span className="font-mono text-lg">{visitDate}</span>
+                                        <span className="font-mono text-base">{visitDate}</span>
                                     </div>
-                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                                    <div className="flex justify-between py-1 border-b border-gray-100">
                                         <span className="font-semibold text-gray-600">病名：</span>
-                                        <span className="font-bold text-lg">{displayDiagnosis}</span>
+                                        <span className="font-bold text-base">{displayDiagnosis}</span>
                                     </div>
-                                    <div className="flex justify-between py-1 border-b border-gray-50">
+                                    <div className="flex justify-between py-1 border-b border-gray-100">
                                         <span className="font-semibold text-gray-600">脈象：</span>
-                                        <span className="font-bold text-lg">{pulse}</span>
+                                        <span className="font-bold text-base">{pulse}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* --- II. Prescription --- */}
-                            <div className="mb-6 flex-1">
-                                <h3 className="font-bold text-md text-gray-800 mb-4 border-b border-gray-300 pb-1">二、處方明細</h3>
+                            {/* --- II. Prescription (明體，密集排版防止超出) --- */}
+                            <div className="mb-2 flex-1 font-ming overflow-hidden flex flex-col">
+                                <h3 className="font-bold text-sm text-gray-800 mb-2 border-b border-gray-300 pb-1 flex-shrink-0">二、處方明細</h3>
                                 
-                                <div className="mb-6">
-                                    <div className="flex justify-between items-end mb-3">
-                                        <h4 className="font-bold text-md text-gray-700">【內服水煎藥】</h4>
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    <div className="flex justify-between items-end mb-2 flex-shrink-0">
+                                        <h4 className="font-bold text-sm text-gray-700">【內服水煎藥】</h4>
                                     </div>
 
-                                    {/* 3欄並列 Grid */}
-                                    <div className="grid grid-cols-3 gap-x-8 gap-y-4 border-t-2 border-gray-800 pt-4">
+                                    {/* 3欄並列 Grid：壓縮行高(gap-y-2)、字體適中 */}
+                                    <div className="grid grid-cols-3 gap-x-6 gap-y-2 border-t-2 border-gray-800 pt-3 flex-1 overflow-hidden">
                                         {parsedData.medicines.map((item, i) => (
-                                            <div key={i} className="flex justify-between items-baseline border-b border-dashed border-gray-300 pb-1 px-2">
-                                                <span className="text-xl font-bold font-serif text-gray-900 tracking-wider">
+                                            <div key={i} className="flex justify-between items-baseline border-b border-dashed border-gray-300 pb-1 px-1">
+                                                <span className="text-base font-bold text-gray-900 tracking-wide">
                                                     {item.name_zh}
                                                 </span>
-                                                <span className="text-lg font-mono font-bold text-gray-800">
-                                                    {item.dosage} <span className="text-sm font-normal text-gray-600">錢</span>
+                                                <span className="text-sm font-mono font-bold text-gray-800">
+                                                    {item.dosage} <span className="text-xs font-normal text-gray-600">錢</span>
                                                 </span>
                                             </div>
                                         ))}
@@ -380,54 +397,54 @@
 
                                     {/* 總結區塊：顯示天數、頻率與總味數 */}
                                     {parsedData.medicines.length > 0 && (
-                                        <div className="mt-6 pt-3 border-t border-gray-300 flex justify-between items-center">
-                                            <div className="text-xl font-bold font-serif text-gray-800 tracking-wide">
+                                        <div className="mt-3 pt-2 border-t border-gray-300 flex justify-between items-center flex-shrink-0">
+                                            <div className="text-base font-bold text-gray-800 tracking-wide">
                                                 {medicationInfo && <span>{medicationInfo}</span>}
                                             </div>
                                             <div>
-                                                <span className="text-sm text-gray-500 mr-2">總計藥材：</span>
-                                                <span className="font-bold text-xl">{parsedData.medicines.length} <span className="text-sm font-normal text-gray-600">味</span></span>
+                                                <span className="text-xs text-gray-500 mr-2">總計藥材：</span>
+                                                <span className="font-bold text-lg">{parsedData.medicines.length} <span className="text-xs font-normal text-gray-600">味</span></span>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {/* --- III. Footer 醫囑與診所資訊 --- */}
-                            <div className="mt-auto pt-8 border-t-2 border-gray-800 break-inside-avoid">
-                                <div className="flex justify-between items-end mb-6">
-                                    <div className="text-left w-2/3 pr-4">
-                                        <p className="text-sm font-bold text-gray-700 mb-2">醫師叮嚀：</p>
-                                        <p className="text-sm text-gray-600 leading-relaxed">
-                                            1. 藥物能協助疏通路徑，但真正決定療效的是您的生活與情緒。<br/>
-                                            2. 治療的終點不是數據的完美，而是找回生活的品質與平靜。<br/>
+                            {/* --- III. Footer 醫囑與診所資訊 (黑體) --- */}
+                            <div className="mt-auto pt-4 border-t-2 border-gray-800 font-hei flex-shrink-0">
+                                <div className="flex justify-between items-end mb-4">
+                                    <div className="text-left w-2/3 pr-2">
+                                        <p className="text-xs font-bold text-gray-700 mb-1">醫師叮嚀：</p>
+                                        <p className="text-xs text-gray-600 leading-relaxed">
+                                            1. 藥物能協助疏通路徑，真正決定療效的關鍵在於您的生活與情緒。<br/>
+                                            2. 放下對數據完美的執著，治療的終點在於找回生活的品質與平靜。<br/>
                                             3. 服藥期間若有任何不適，請先停藥，並於回診時討論。
                                         </p>
                                     </div>
                                     <div className="w-1/3 text-right">
                                         <div className="inline-block text-center">
-                                            <div className="mb-2 relative">
-                                                {/* 蓋章區 */}
-                                                <div className="w-20 h-20 border-2 border-red-300 rounded-full absolute -top-6 left-1/2 transform -translate-x-1/2 opacity-30 flex items-center justify-center">
-                                                    <span className="text-red-300 text-xs transform -rotate-12">醫師章</span>
+                                            <div className="mb-1 relative">
+                                                {/* 蓋章區：縮小體積 */}
+                                                <div className="w-16 h-16 border border-red-300 rounded-full absolute -top-4 left-1/2 transform -translate-x-1/2 opacity-30 flex items-center justify-center">
+                                                    <span className="text-red-300 text-[10px] transform -rotate-12">醫師章</span>
                                                 </div>
-                                                <p className="font-bold text-xl mb-1 serif border-b border-black pb-1 min-w-[120px]">
+                                                <p className="font-bold text-lg mb-1 border-b border-black pb-1 min-w-[100px] font-ming">
                                                     {CLINIC_INFO.physician}
                                                 </p>
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">執照號：{CLINIC_INFO.license}</p>
+                                            <p className="text-[10px] text-gray-500 mt-1">執照號：{CLINIC_INFO.license}</p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* 最下方的診所資訊 */}
-                                <div className="border-t border-gray-200 pt-3 flex flex-wrap justify-between items-center text-xs text-gray-400">
+                                {/* 最下方的診所資訊：字體縮到最小 */}
+                                <div className="border-t border-gray-200 pt-2 flex flex-wrap justify-between items-center text-[10px] text-gray-400">
                                     <div className="flex gap-4">
-                                        <span className="font-bold text-gray-500">看診院所：{CLINIC_INFO.nameZh}</span>
-                                        <span>電話：{CLINIC_INFO.phone}</span>
+                                        <span className="font-bold text-gray-500">{CLINIC_INFO.nameZh}</span>
+                                        <span>TEL: {CLINIC_INFO.phone}</span>
                                     </div>
                                     <div>
-                                        <span>地址：{CLINIC_INFO.address}</span>
+                                        <span>ADD: {CLINIC_INFO.address}</span>
                                     </div>
                                 </div>
                             </div>
@@ -443,3 +460,4 @@
     </script>
 </body>
 </html>
+```
