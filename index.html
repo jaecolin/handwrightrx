@@ -1145,14 +1145,19 @@
                                     <h4 className="font-bold text-sm text-gray-700">【內服水煎藥】</h4>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-x-6 gap-y-2 content-start border-t-2 border-gray-800 pt-4 flex-1 overflow-hidden">
+                                {/* 3欄並列 Grid：增加行間距與垂直分隔線，字體放大但維持行高 */}
+                                <div className="grid grid-cols-3 gap-y-1.5 content-start border-t-2 border-gray-800 pt-3 flex-1 overflow-hidden">
                                     {parsedData.medicines.map((item, i) => (
-                                        <div key={i} className="flex justify-between items-baseline border-b border-dashed border-gray-300 py-1.5 px-1">
-                                            <span className="text-base font-bold text-gray-900 tracking-wide leading-relaxed">
+                                        <div key={i} className={`flex justify-between items-baseline border-b border-dashed border-gray-300 py-1 ${
+                                            i % 3 === 0 ? 'pr-4 border-r-2 border-dotted border-gray-300' : 
+                                            i % 3 === 1 ? 'px-4 border-r-2 border-dotted border-gray-300' : 
+                                            'pl-4'
+                                        }`}>
+                                            <span className="text-lg font-bold text-gray-900 tracking-wider leading-none">
                                                 {item.name_zh}
                                             </span>
-                                            <span className="text-sm font-mono font-bold text-gray-800 leading-relaxed">
-                                                {item.dosage} <span className="text-xs font-normal text-gray-600">錢</span>
+                                            <span className="text-base font-mono font-bold text-gray-800 leading-none">
+                                                {item.dosage} <span className="text-sm font-normal text-gray-600">錢</span>
                                             </span>
                                         </div>
                                     ))}
