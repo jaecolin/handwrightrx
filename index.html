@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>林佑彥醫師 - 水煎藥處方生成器 (ICD萬用擴充版 v16)</title>
+    <title>林佑彥醫師 - 水煎藥處方生成器 (純黑列印排版優化版 v18)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -717,7 +717,23 @@
             "M54.30": "未明示側性坐骨神經痛",
             "M54.50": "下背痛",
             "M54.9": "背痛",
+            "M60.80": "未明示部位其他肌炎",
+            "M60.811": "右側肩部其他肌炎",
+            "M60.819": "未明示側性肩部其他肌炎",
+            "M60.821": "右側上臂其他肌炎",
+            "M60.822": "左側上臂其他肌炎",
+            "M60.829": "未明示側性上臂其他肌炎",
+            "M60.852": "左側大腿其他肌炎",
+            "M60.859": "未明示側性大腿其他肌炎",
+            "M60.88": "其他部位其他肌炎",
+            "M60.89": "多處部位其他肌炎",
+            "M62.830": "背部肌肉痙攣",
+            "M65.9": "其他滑膜炎及腱鞘炎",
+            "M77.11": "右側肘部外側上髁炎",
+            "M79.1": "肌痛",
             "M79.2": "神經痛及神經炎",
+            "M79.609": "肢體疼痛",
+            "M79.644": "右側手指疼痛",
             "N13.30": "腎水腫",
             "N18.3": "第三期慢性腎臟疾病(中度)",
             "N18.4": "第四期慢性腎臟疾病(重度)",
@@ -828,9 +844,55 @@
             "S06.300S": "局部腦損傷,未伴有意識喪失之後遺症",
             "S06.5X0S": "創傷性硬腦膜下出血,未伴有意識喪失之後遺症",
             "S06.6X0S": "創傷性蜘蛛網膜下出血,未伴有意識喪失之後遺症",
+            "S20.20XD": "胸部挫傷之後續照護",
+            "S20.211S": "右側前胸壁挫傷之後遺症",
+            "S20.212A": "左側前胸壁挫傷之初期照護",
+            "S20.222A": "左側後胸壁挫傷之初期照護",
+            "S22.31XS": "右側肋骨骨折之後遺症",
+            "S24.103A": "第7-10胸脊髓損傷之初期照護",
+            "S29.012A": "後側胸部肌肉和肌腱拉傷之初期照護",
+            "S30.0XXA": "下背和骨盆挫傷之初期照護",
+            "S30.0XXD": "下背和骨盆挫傷之後續照護",
+            "S30.0XXS": "下背和骨盆挫傷之後遺症",
+            "S33.5XXA": "腰(部)脊椎[腰椎]韌帶扭傷及拉傷(勞損)之初期照護",
+            "S39.013A": "骨盆肌肉、筋膜及韌帶拉傷之初期照護",
+            "S40.011A": "右側肩膀挫傷之初期照護",
+            "S40.011D": "右側肩膀挫傷之後續照護",
+            "S40.011S": "右側肩膀挫傷之後遺症",
+            "S52.021K": "右側尺骨鷹嘴突移位閉鎖性骨折未伴有關節內伸展未癒合之後續照護",
+            "S56.811A": "右側前臂區位其他肌肉、筋膜及肌腱拉傷之初期照護",
+            "S56.812S": "左側前臂區位其他肌肉、筋膜及肌腱拉傷之後遺症",
+            "S60.011A": "右側拇指挫傷未伴有指甲受損之初期照護",
+            "S60.011S": "右側拇指挫傷未伴有指甲受損之後遺症",
+            "S60.012A": "左側拇指挫傷未伴有指甲受損之初期照護",
+            "S60.031A": "右側中指挫傷未伴有指甲受損之初期照護",
+            "S60.032A": "左側中指挫傷未伴有指甲受損之初期照護",
+            "S60.052S": "左側小指挫傷未伴有指甲受損之後遺症",
+            "S60.211D": "右側腕部挫傷之後續照護",
+            "S60.212A": "左側腕部挫傷之初期照護",
+            "S63.592S": "左側腕部其他特定扭傷之後遺症",
+            "S63.602A": "左側拇指扭傷之初期照護",
+            "S63.613A": "左側中指扭傷之初期照護",
+            "S70.02XS": "左側髖部挫傷之後遺症",
+            "S76.112A": "左側股四頭肌、筋膜及肌腱拉傷之初期照護",
+            "S80.01XA": "右側膝部挫傷之初期照護",
+            "S80.02XS": "左側膝部挫傷之後遺症",
+            "S80.11XA": "右側小腿挫傷之初期照護",
+            "S90.01XA": "右側踝部挫傷之初期照護",
+            "S90.01XS": "右側踝部挫傷之後遺症",
+            "S90.31XA": "右側足部挫傷之初期照護",
+            "S90.32XA": "左側足部挫傷之初期照護",
+            "S92.001S": "右側跟骨骨折之後遺症",
+            "S92.301S": "右側足部未明示蹠骨骨折之後遺症",
+            "S93.401S": "右側踝部韌帶扭傷之後遺症",
+            "S93.402A": "左側踝部韌帶扭傷之初期照護",
+            "S93.402D": "左側踝部韌帶扭傷之後續照護",
+            "S93.402S": "左側踝部韌帶扭傷之後遺症",
+            "S93.509S": "未明示側性腳趾扭傷之後遺症",
             "T07": "多處損傷",
             "T67.0XXA": "熱中暑及日中暑之初期照護",
             "T67.0XXS": "熱中暑及日中暑之後遺症",
+            "T74.92XD": "已確認兒童受虐之後續照護",
             "U07.1": "嚴重特殊傳染性肺炎",
             "U09.9": "嚴重特殊傳染性肺炎後的病況",
             "Z94.1": "心臟移植狀態"
@@ -1094,16 +1156,16 @@
                     {/* 右側：預覽區 */}
                     <div className="w-full md:w-2/3 bg-gray-200 p-2 md:p-8 flex justify-center overflow-y-auto">
                         
-                        {/* A4 紙張本體 */}
+                        {/* A4 紙張本體 (設定文字為純黑 text-black) */}
                         <div id="print-area" className="bg-white shadow-xl w-[210mm] h-[297mm] p-8 md:p-10 relative flex flex-col text-black box-border overflow-hidden">
                             
                             {/* --- 頂部標題區 --- */}
-                            <div className="text-center mb-6 pt-2 border-b-2 border-gray-800 pb-3 flex-shrink-0">
+                            <div className="text-center mb-6 pt-2 border-b-2 border-black pb-3 flex-shrink-0">
                                 <div className="flex justify-center items-baseline flex-wrap gap-x-4 gap-y-1">
-                                    <h1 className="text-2xl md:text-[28px] font-ming font-bold tracking-[0.1em] text-gray-900">
+                                    <h1 className="text-2xl md:text-[26px] font-ming font-bold tracking-[0.1em] text-black">
                                         {CLINIC_INFO.physician} 中醫水煎藥處方箋
                                     </h1>
-                                    <p className="text-base font-ming text-gray-600 tracking-wider">
+                                    <p className="text-base font-ming text-black tracking-wider">
                                         TCM Herbal Prescription
                                     </p>
                                 </div>
@@ -1111,53 +1173,53 @@
 
                             {/* --- I. Patient Info --- */}
                             <div className="mb-4 font-ming flex-shrink-0">
-                                <h3 className="font-bold text-sm text-gray-800 mb-2 border-b border-gray-300 pb-1">一、患者資訊</h3>
+                                <h3 className="font-bold text-sm text-black mb-2 border-b border-black pb-1">一、患者資訊</h3>
                                 <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
                                     {/* 第一行：姓名與日期 */}
-                                    <div className="flex justify-between py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600 shrink-0">姓名：</span>
-                                        <span className="font-bold text-base text-right">{patientName}</span>
+                                    <div className="flex justify-between py-1 border-b border-gray-300">
+                                        <span className="font-semibold text-black shrink-0">姓名：</span>
+                                        <span className="font-bold text-base text-black text-right">{patientName}</span>
                                     </div>
-                                    <div className="flex justify-between py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600 shrink-0">開立日期：</span>
-                                        <span className="font-mono text-base text-right">{visitDate}</span>
+                                    <div className="flex justify-between py-1 border-b border-gray-300">
+                                        <span className="font-semibold text-black shrink-0">開立日期：</span>
+                                        <span className="font-mono text-base text-black text-right">{visitDate}</span>
                                     </div>
                                     
                                     {/* 第二行：脈象 */}
-                                    <div className="col-span-2 flex py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600 w-20 shrink-0">脈象：</span>
-                                        <span className="font-bold text-base flex-1">{pulse}</span>
+                                    <div className="col-span-2 flex py-1 border-b border-gray-300">
+                                        <span className="font-semibold text-black w-20 shrink-0">脈象：</span>
+                                        <span className="font-bold text-base text-black flex-1">{pulse}</span>
                                     </div>
                                     
                                     {/* 第三行：病名 */}
-                                    <div className="col-span-2 flex py-1 border-b border-gray-100">
-                                        <span className="font-semibold text-gray-600 w-20 shrink-0">病名：</span>
-                                        <span className="font-bold text-base flex-1">{displayDiagnosis}</span>
+                                    <div className="col-span-2 flex py-1 border-b border-gray-300">
+                                        <span className="font-semibold text-black w-20 shrink-0">病名：</span>
+                                        <span className="font-bold text-base text-black flex-1">{displayDiagnosis}</span>
                                     </div>
                                 </div>
                             </div>
 
                             {/* --- II. Prescription --- */}
                             <div className="flex-1 font-ming flex flex-col overflow-hidden">
-                                <h3 className="font-bold text-sm text-gray-800 mb-2 border-b border-gray-300 pb-1 flex-shrink-0">二、處方明細</h3>
+                                <h3 className="font-bold text-sm text-black mb-2 border-b border-black pb-1 flex-shrink-0">二、處方明細</h3>
                                 
                                 <div className="flex justify-between items-end mb-2 flex-shrink-0">
-                                    <h4 className="font-bold text-sm text-gray-700">【內服水煎藥】</h4>
+                                    <h4 className="font-bold text-sm text-black">【內服水煎藥】</h4>
                                 </div>
 
-                                {/* 3欄並列 Grid：增加行間距與垂直分隔線，字體放大但維持行高 */}
-                                <div className="grid grid-cols-3 gap-y-1.5 content-start border-t-2 border-gray-800 pt-3 flex-1 overflow-hidden">
+                                {/* 3欄並列 Grid：增加行間距 gap-y-3 與垂直分隔線，字體放大維持舒適行高 */}
+                                <div className="grid grid-cols-3 gap-y-3 content-start border-t-2 border-black pt-4 flex-1 overflow-hidden">
                                     {parsedData.medicines.map((item, i) => (
-                                        <div key={i} className={`flex justify-between items-baseline border-b border-dashed border-gray-300 py-1 ${
-                                            i % 3 === 0 ? 'pr-4 border-r-2 border-dotted border-gray-300' : 
-                                            i % 3 === 1 ? 'px-4 border-r-2 border-dotted border-gray-300' : 
+                                        <div key={i} className={`flex justify-between items-baseline border-b border-dashed border-gray-400 py-1.5 ${
+                                            i % 3 === 0 ? 'pr-4 border-r border-dotted border-gray-400' : 
+                                            i % 3 === 1 ? 'px-4 border-r border-dotted border-gray-400' : 
                                             'pl-4'
                                         }`}>
-                                            <span className="text-lg font-bold text-gray-900 tracking-wider leading-none">
+                                            <span className="text-lg font-bold text-black tracking-wider leading-tight">
                                                 {item.name_zh}
                                             </span>
-                                            <span className="text-base font-mono font-bold text-gray-800 leading-none">
-                                                {item.dosage} <span className="text-sm font-normal text-gray-600">錢</span>
+                                            <span className="text-base font-mono font-bold text-black leading-tight">
+                                                {item.dosage} <span className="text-sm font-normal text-black">錢</span>
                                             </span>
                                         </div>
                                     ))}
@@ -1165,35 +1227,35 @@
                             </div>
 
                             {/* --- 天數、總計與代煎手寫欄位 --- */}
-                            <div className="mt-auto pt-3 border-t border-gray-300 flex flex-col gap-2 flex-shrink-0 font-ming">
+                            <div className="mt-auto pt-3 border-t border-black flex flex-col gap-2 flex-shrink-0 font-ming">
                                 <div className="flex justify-between items-center">
-                                    <div className="text-base font-bold text-gray-800 tracking-wide">
+                                    <div className="text-base font-bold text-black tracking-wide">
                                         {medicationInfo && <span>{medicationInfo}</span>}
                                     </div>
                                     <div>
-                                        <span className="text-xs text-gray-500 mr-2">總計藥材：</span>
-                                        <span className="font-bold text-lg">{parsedData.medicines.length} <span className="text-xs font-normal text-gray-600">味</span></span>
+                                        <span className="text-sm text-black mr-2">總計藥材：</span>
+                                        <span className="font-bold text-lg text-black">{parsedData.medicines.length} <span className="text-sm font-normal text-black">味</span></span>
                                     </div>
                                 </div>
                                 
                                 {/* 觸發條件：當病歷摘要有代煎、寄送字眼時，自動顯示行政手寫欄位 */}
                                 {needsDelivery && (
-                                    <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-gray-200">
-                                        <span className="text-xs text-gray-500 italic">※ 此處方含代煎 / 代寄運服務</span>
+                                    <div className="flex justify-between items-center pt-2 mt-1 border-t border-dashed border-gray-400">
+                                        <span className="text-xs text-black italic">※ 此處方含代煎 / 代寄運服務</span>
                                         <div>
-                                            <span className="text-sm font-bold text-gray-700 mr-2">預計出貨 / 寄送日期：</span>
-                                            <span className="inline-block w-36 border-b border-gray-500 align-text-bottom"></span>
+                                            <span className="text-sm font-bold text-black mr-2">預計出貨 / 寄送日期：</span>
+                                            <span className="inline-block w-36 border-b border-black align-text-bottom"></span>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
                             {/* --- III. Footer 醫囑與診所資訊 --- */}
-                            <div className="pt-4 border-t-2 border-gray-800 font-hei flex-shrink-0">
+                            <div className="pt-4 border-t-2 border-black font-hei flex-shrink-0">
                                 <div className="flex justify-between items-end mb-4">
                                     <div className="text-left w-2/3 pr-2">
-                                        <p className="text-xs font-bold text-gray-700 mb-1">醫師叮嚀：</p>
-                                        <p className="text-xs text-gray-600 leading-relaxed">
+                                        <p className="text-xs font-bold text-black mb-1">醫師叮嚀：</p>
+                                        <p className="text-xs text-black leading-relaxed">
                                             1. 藥物僅輔助疏通，療效關鍵仍在您的生活作息與情緒。<br/>
                                             2. 放下對數據的執著，治療終點在找回生活品質與平靜。<br/>
                                             3. 服藥期間若有任何不適，請先停藥，並於回診時討論。
@@ -1203,22 +1265,22 @@
                                         <div className="inline-block text-center">
                                             <div className="mb-1 relative">
                                                 {/* 蓋章區 */}
-                                                <div className="w-16 h-16 border border-red-300 rounded-full absolute -top-4 left-1/2 transform -translate-x-1/2 opacity-30 flex items-center justify-center">
-                                                    <span className="text-red-300 text-[10px] transform -rotate-12">醫師章</span>
+                                                <div className="w-16 h-16 border border-black rounded-full absolute -top-4 left-1/2 transform -translate-x-1/2 opacity-20 flex items-center justify-center">
+                                                    <span className="text-black text-[10px] transform -rotate-12">醫師章</span>
                                                 </div>
-                                                <p className="font-bold text-lg mb-1 border-b border-black pb-1 min-w-[100px] font-ming">
+                                                <p className="font-bold text-lg mb-1 border-b border-black pb-1 min-w-[100px] font-ming text-black">
                                                     {CLINIC_INFO.physician}
                                                 </p>
                                             </div>
-                                            <p className="text-[10px] text-gray-500 mt-1">執照號：{CLINIC_INFO.license}</p>
+                                            <p className="text-[10px] text-black mt-1">執照號：{CLINIC_INFO.license}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* 最下方的診所資訊 */}
-                                <div className="border-t border-gray-200 pt-2 flex flex-wrap justify-between items-center text-[10px] text-gray-400">
+                                <div className="border-t border-gray-400 pt-2 flex flex-wrap justify-between items-center text-[10px] text-black">
                                     <div className="flex gap-4">
-                                        <span className="font-bold text-gray-500">{CLINIC_INFO.nameZh}</span>
+                                        <span className="font-bold text-black">{CLINIC_INFO.nameZh}</span>
                                         <span>電話: {CLINIC_INFO.phone}</span>
                                     </div>
                                     <div>
