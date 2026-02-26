@@ -149,7 +149,7 @@
             }, [rawText]);
 
             // --- 分頁邏輯 (Chunking Logic) ---
-            const CHUNK_SIZE = 33; // 更新為每頁最多33味藥 (11行x3)
+            const CHUNK_SIZE = 36; // 更新為每頁最多36味藥 (12行x3)
             const totalMedicines = parsedData.medicines.length;
             const medicineChunks = [];
             
@@ -241,9 +241,9 @@
                                 {/* --- 頂部標題區 --- */}
                                 <div className="text-center mb-6 pt-2 border-b-2 border-black pb-3 flex-shrink-0">
                                     <div className="flex justify-center items-baseline flex-wrap gap-x-4 gap-y-1">
-                                        <h1 className="text-2xl md:text-[28px] font-ming font-bold tracking-[0.1em] text-black">
+                                        <h1 className="text-2xl md:text-[26px] font-ming font-bold tracking-[0.1em] text-black">
                                             {CLINIC_INFO.physician} 中醫水煎藥處方箋
-                                        </h1><br/>
+                                        </h1>
                                         <p className="text-base font-ming text-black tracking-wider">
                                             TCM Herbal Prescription
                                         </p>
@@ -379,5 +379,3 @@
     </script>
 </body>
 </html>
-
-
